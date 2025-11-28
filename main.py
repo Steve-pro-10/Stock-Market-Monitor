@@ -4,7 +4,7 @@ import time, threading, platform, json
 import miniaudio
 os = platform.system()
 
-APIKEY = "YOUR_TWELVEDATA_APIKEY"
+APIKEY = "YOUR_API_KEY"
 ADVICE_AUDIO_PATH = "lello.mp3"
 new_stock_label = None
 root = ctk.CTk()
@@ -57,7 +57,7 @@ def open_saves():
                     
                 df = ts.as_pandas()
                 stock_price =  df["close"].iloc[0] #PRENDE L'ULTIMO PREZZO DELLO STOCK.
-                new_stock_label = ctk.CTkLabel(root, text=f"TICKER: {key} | {color_text("CURRENT PRICE: " + stock_price, "verde")} | {color_text('PRICE TO REACH: ' +value)}")
+                new_stock_label = ctk.CTkLabel(root, text=f"TICKER: {key} | {"CURRENT PRICE: " + str(stock_price)} | 'PRICE TO REACH:  {str(value)}")
                 new_stock_label.grid(column=0,padx=20,columnspan=2)
                 labels_list[new_stock_label] = [key,value]
         file.close()
@@ -81,7 +81,7 @@ def new_stock():
     last_price = df["close"].iloc[-1]
     
     
-    new_stock_label = ctk.CTkLabel(root, text=f"TICKER: {stock_ticker_entry_text_get} | {color_text("CURRENT PRICE: " + last_price, "verde")} | {color_text('PRICE TO REACH: ' +prezzo_limitevar_get)}")
+    new_stock_label = ctk.CTkLabel(root, text=f"TICKER: {stock_ticker_entry_text_get} | CURRENT PRICE:  {str(last_price)} | PRICE TO REACH:  {str(prezzo_limitevar_get)}")
     new_stock_label.grid(column=0, padx = 20,columnspan=2)
     
     stocks_dict[stock_ticker_entry_text_get] = prezzo_limitevar_get
@@ -100,7 +100,7 @@ def update_stock():
 
             df = ts.as_pandas()
             last_price = df["close"].iloc[-1]
-            label.configure(text=f"TICKER: {symbol} | {color_text("CURRENT PRICE: " + last_price, "verde")} | {color_text('PRICE TO REACH: ' +prezzo_da_raggiungere)}")
+            label.configure(text=f"TICKER: {symbol} | CURRENT PRICE: {str(last_price)} | 'PRICE TO REACH: ' {str(prezzo_da_raggiungere)}")
                 
             print(f"prezzo aggiornato {symbol}  {prezzo_da_raggiungere}")
         
@@ -159,6 +159,6 @@ open_saves()
 root.mainloop()
 
 
-save_stocks()#SALVA IL DIZIONARIO CON TICKER COME CHIAVI E IL PREZZO MAX COME VALORI!
+save_stocks()
 
 print("programma finito")
