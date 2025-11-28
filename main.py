@@ -4,22 +4,35 @@ import time, threading, platform, json
 import miniaudio
 os = platform.system()
 
-apikey = "INSERT_YOUR_API_KEY"
+apikey = "11f5ab7e343a4b059c3d9b647c564ba8"
 new_stock_label = None
 root = ctk.CTk()
-stocks_dict = {}
 
+stocks_dict = {}
+labels_list = {}
 root.iconbitmap("stock.ico")
 
-root.geometry("600x150")
-root.title("Stocks Monitor V1.0")
+root.geometry("500x200")
+root.title("Stocks Monitor V1.1")
 
+corner_radius=80
 
+def color_text(text, color):
+    colors = {
+        "rosso": "\033[31m",
+        "verde": "\033[32m",
+        "giallo": "\033[33m",
+        "blu": "\033[34m",
+        "magenta": "\033[35m",
+        "ciano": "\033[36m",
+        "bianco": "\033[37m",
+    }
+    return f"{colors.get(color, '')}{text}\033[0m"
 
-def prezzo_raggiunto(stock_price):
+def prezzo_raggiunto(stock_price,symbol):
    
     
-    threading.Thread(target= ctk.CTkInputDialog(text=f"Lo stock ha superato i {stock_price} USD",title="!AVVISO!"))
+    threading.Thread(target= ctk.CTkInputDialog(text=f"Lo stock {symbol} ha superato i {stock_price} USD",title="!AVVISO!"))
     stream = miniaudio.stream_file("lello.mp3")
     with miniaudio.PlaybackDevice() as device:
         device.start(stream)
@@ -43,14 +56,58 @@ def open_saves():
                     
                 df = ts.as_pandas()
                 stock_price =  df["close"].iloc[0] #PRENDE L'ULTIMO PREZZO DELLO STOCK.
-                new_stock_label = ctk.CTkLabel(root, text=f"STOCK: {key}; PREZZO ATTUALE: {stock_price}; PREZZO DA RAGGIUNGERE: {value}")
-                new_stock_label.grid()
+                new_stock_label = ctk.CTkLabel(root, text=f"TICKER: {key} | {color_text("PREZZO ATTUALE: " + stock_price, "verde")} | {color_text('PREZZO DA RAGGIUNGERE: ' +value)}")
+                new_stock_label.grid(column=0,padx=20,columnspan=2)
+                labels_list[new_stock_label] = [key,value]
         file.close()
     except FileNotFoundError:
         pass
     except Exception as e:
     
         print(e)
+        
+        
+
+def new_stock():
+    global new_stock_label
+    prezzo_limitevar_get = prezzo_limitevar.get()
+    stock_ticker_entry_text_get = stock_ticker_entry_text.get()
+    td = TDClient(apikey=apikey)
+
+    ts = td.time_series(symbol=stock_ticker_entry_text_get,interval="1min",outputsize=1)
+
+    df = ts.as_pandas()
+    last_price = df["close"].iloc[-1]
+    
+    
+    new_stock_label = ctk.CTkLabel(root, text=f"TICKER: {stock_ticker_entry_text_get} | {color_text("PREZZO ATTUALE: " + last_price, "verde")} | {color_text('PREZZO DA RAGGIUNGERE: ' +prezzo_limitevar_get)}")
+    new_stock_label.grid(column=0, padx = 20,columnspan=2)
+    
+    stocks_dict[stock_ticker_entry_text_get] = prezzo_limitevar_get
+    
+    
+    labels_list[new_stock_label] = [stock_ticker_entry_text_get,prezzo_limitevar_get]
+
+def update_stock():
+    while True:
+        for label, symbol_price in labels_list.items():
+            symbol = symbol_price[0]
+            prezzo_da_raggiungere = symbol_price[1]
+            td = TDClient(apikey=apikey)
+
+            ts = td.time_series(symbol=symbol,interval="1min",outputsize=1)
+
+            df = ts.as_pandas()
+            last_price = df["close"].iloc[-1]
+            label.configure(text=f"TICKER: {symbol} | {color_text("PREZZO ATTUALE: " + last_price, "verde")} | {color_text('PREZZO DA RAGGIUNGERE: ' +prezzo_da_raggiungere)}")
+                
+            print(f"prezzo aggiornato {symbol}  {prezzo_da_raggiungere}")
+        
+            if float(last_price) > float(prezzo_da_raggiungere):
+                prezzo_raggiunto(prezzo_da_raggiungere,symbol)
+        time.sleep(30)
+          
+
 def remove_stock():
     global stocks_dict, key, value
     key,value = stocks_dict.popitem()
@@ -65,43 +122,10 @@ def save_stocks():
        json.dump(stocks_dict,file, indent=4)
        
        
-def update_stock(symbol,price_to_reach):
-    while True:
-        td = TDClient(apikey=apikey)
-
-        ts = td.time_series(symbol=symbol,interval="1min",outputsize=1)
-
-        df = ts.as_pandas()
-        last_price = df["close"].iloc[-1]
-        time.sleep(60)
-        if float(last_price) > float(price_to_reach):
-            
-            break
-    prezzo_raggiunto(price_to_reach)
-          
-        
-def new_stock():
-    global new_stock_label
-    prezzo_limitevar_get = prezzo_limitevar.get()
-    stock_ticker_entry_text_get = stock_ticker_entry_text.get()
-    td = TDClient(apikey=apikey)
-
-    ts = td.time_series(symbol=stock_ticker_entry_text_get,interval="1min",outputsize=1)
-
-    df = ts.as_pandas()
-    last_price = df["close"].iloc[-1]
-    
-    
-    new_stock_label = ctk.CTkLabel(root, text=f"STOCK: {stock_ticker_entry_text_get}; PREZZO ATTUALE: {last_price}; PREZZO DA RAGGIUNGERE: {prezzo_limitevar_get}")
-    new_stock_label.grid(column=0)
-    stocks_dict[stock_ticker_entry_text_get] = prezzo_limitevar_get
-    update_stock(stock_ticker_entry_text_get, prezzo_limitevar_get)
-    
-
 
 def price_thread():
     threading.Thread(target=new_stock,daemon=True).start()
-
+threading.Thread(target=update_stock,daemon=True).start()
 prezzo_limitevar = ctk.StringVar()
 stock_ticker_entry_text = ctk.StringVar()
 attualpricelabelvar = ctk.StringVar()
@@ -111,27 +135,32 @@ attualpricelabelvar = ctk.StringVar()
 label = ctk.CTkLabel(root,text="inserisci il ticker dell'azienda")
 label.grid(row=0,column=0)
 label2 = ctk.CTkLabel(root,text="inserisci il prezzo dell'avviso")
-label2.grid(row=0,column=2)
+label2.grid(row=0,column=1)
 
 ########################################################################à
 stock_ticker_entry = ctk.CTkEntry(root,font=("Helvetica",20),width=200,textvariable=stock_ticker_entry_text)
 stock_ticker_entry.grid(row=1,column=0)
 
 prezzo_limite = ctk.CTkEntry(root,font=("Helvetica",20),width=200,textvariable=prezzo_limitevar)
-prezzo_limite.grid(row=1, column=2)
+prezzo_limite.grid(row=1, column=1)
 
-add_button = ctk.CTkButton(root, text= "+", font=("Arial",16),command=price_thread)
-add_button.grid(row=2,column=1)
+add_button = ctk.CTkButton(root, text= "+", font=("Arial",16),corner_radius=corner_radius,command=price_thread)
+add_button.grid(row=2,column=0)
 
-remove_button = ctk.CTkButton(root, text= "Del", font=("Arial",16),command=remove_stock)
-remove_button.grid(row=2,column = 2)
+remove_button = ctk.CTkButton(root, text= "Del", font=("Arial",16),corner_radius=corner_radius,command=remove_stock)
+remove_button.grid(row=2,column = 1)
 #########################################################################################
 
 
     
 open_saves()
+
 root.mainloop()
 
+
+save_stocks()#SALVA IL DIZIONARIO CON TICKER COME CHIAVI E IL PREZZO MAX COME VALORI!
+
+print("programma finito")
 
 save_stocks()#SALVA IL DIZIONARIO CON TICKER COME CHIAVI E IL PREZZO MAX COME VALORI!
 
