@@ -4,7 +4,7 @@ import time, threading, platform, json
 import miniaudio
 os = platform.system()
 
-apikey = "11f5ab7e343a4b059c3d9b647c564ba8"
+apikey = "INSERT_YOUR_API_KEY"
 new_stock_label = None
 root = ctk.CTk()
 stocks_dict = {}
