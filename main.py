@@ -4,7 +4,8 @@ import time, threading, platform, json
 import miniaudio
 os = platform.system()
 
-apikey = "11f5ab7e343a4b059c3d9b647c564ba8"
+APIKEY = "YOUR_TWELVEDATA_APIKEY"
+ADVICE_AUDIO_PATH = "lello.mp3"
 new_stock_label = None
 root = ctk.CTk()
 
@@ -32,8 +33,8 @@ def color_text(text, color):
 def prezzo_raggiunto(stock_price,symbol):
    
     
-    threading.Thread(target= ctk.CTkInputDialog(text=f"Lo stock {symbol} ha superato i {stock_price} USD",title="!AVVISO!"))
-    stream = miniaudio.stream_file("lello.mp3")
+    threading.Thread(target= ctk.CTkInputDialog(text=f"THE STOCK {symbol} HAS PASS {stock_price} USD",title="!ADVICE!"))
+    stream = miniaudio.stream_file(ADVICE_AUDIO_PATH)
     with miniaudio.PlaybackDevice() as device:
         device.start(stream)
 
@@ -46,7 +47,7 @@ def open_saves():
             stocks_dict = datas
             for key, value in datas.items():
                 stocks_dict[key] = value
-                td = TDClient(apikey)
+                td = TDClient(APIKEY)
                 ts = td.time_series(
                     symbol=key,
                     interval="1min",
@@ -56,7 +57,7 @@ def open_saves():
                     
                 df = ts.as_pandas()
                 stock_price =  df["close"].iloc[0] #PRENDE L'ULTIMO PREZZO DELLO STOCK.
-                new_stock_label = ctk.CTkLabel(root, text=f"TICKER: {key} | {color_text("PREZZO ATTUALE: " + stock_price, "verde")} | {color_text('PREZZO DA RAGGIUNGERE: ' +value)}")
+                new_stock_label = ctk.CTkLabel(root, text=f"TICKER: {key} | {color_text("CURRENT PRICE: " + stock_price, "verde")} | {color_text('PRICE TO REACH: ' +value)}")
                 new_stock_label.grid(column=0,padx=20,columnspan=2)
                 labels_list[new_stock_label] = [key,value]
         file.close()
@@ -72,7 +73,7 @@ def new_stock():
     global new_stock_label
     prezzo_limitevar_get = prezzo_limitevar.get()
     stock_ticker_entry_text_get = stock_ticker_entry_text.get()
-    td = TDClient(apikey=apikey)
+    td = TDClient(apikey=APIKEY)
 
     ts = td.time_series(symbol=stock_ticker_entry_text_get,interval="1min",outputsize=1)
 
@@ -80,7 +81,7 @@ def new_stock():
     last_price = df["close"].iloc[-1]
     
     
-    new_stock_label = ctk.CTkLabel(root, text=f"TICKER: {stock_ticker_entry_text_get} | {color_text("PREZZO ATTUALE: " + last_price, "verde")} | {color_text('PREZZO DA RAGGIUNGERE: ' +prezzo_limitevar_get)}")
+    new_stock_label = ctk.CTkLabel(root, text=f"TICKER: {stock_ticker_entry_text_get} | {color_text("CURRENT PRICE: " + last_price, "verde")} | {color_text('PRICE TO REACH: ' +prezzo_limitevar_get)}")
     new_stock_label.grid(column=0, padx = 20,columnspan=2)
     
     stocks_dict[stock_ticker_entry_text_get] = prezzo_limitevar_get
@@ -93,13 +94,13 @@ def update_stock():
         for label, symbol_price in labels_list.items():
             symbol = symbol_price[0]
             prezzo_da_raggiungere = symbol_price[1]
-            td = TDClient(apikey=apikey)
+            td = TDClient(apikey=APIKEY)
 
             ts = td.time_series(symbol=symbol,interval="1min",outputsize=1)
 
             df = ts.as_pandas()
             last_price = df["close"].iloc[-1]
-            label.configure(text=f"TICKER: {symbol} | {color_text("PREZZO ATTUALE: " + last_price, "verde")} | {color_text('PREZZO DA RAGGIUNGERE: ' +prezzo_da_raggiungere)}")
+            label.configure(text=f"TICKER: {symbol} | {color_text("CURRENT PRICE: " + last_price, "verde")} | {color_text('PRICE TO REACH: ' +prezzo_da_raggiungere)}")
                 
             print(f"prezzo aggiornato {symbol}  {prezzo_da_raggiungere}")
         
@@ -132,9 +133,9 @@ attualpricelabelvar = ctk.StringVar()
 
 ################################################################
 
-label = ctk.CTkLabel(root,text="inserisci il ticker dell'azienda")
+label = ctk.CTkLabel(root,text="Write the ticker")
 label.grid(row=0,column=0)
-label2 = ctk.CTkLabel(root,text="inserisci il prezzo dell'avviso")
+label2 = ctk.CTkLabel(root,text="Write the price")
 label2.grid(row=0,column=1)
 
 ########################################################################à
@@ -157,10 +158,6 @@ open_saves()
 
 root.mainloop()
 
-
-save_stocks()#SALVA IL DIZIONARIO CON TICKER COME CHIAVI E IL PREZZO MAX COME VALORI!
-
-print("programma finito")
 
 save_stocks()#SALVA IL DIZIONARIO CON TICKER COME CHIAVI E IL PREZZO MAX COME VALORI!
 
