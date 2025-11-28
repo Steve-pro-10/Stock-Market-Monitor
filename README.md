@@ -8,6 +8,7 @@ If the target price has not yet been reached, the interface will show:
 -The ticker symbol,
 
 -The current stock price (updated every minute)
+
 -The target price that will trigger the alert.
 
 
