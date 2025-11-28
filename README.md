@@ -1,10 +1,20 @@
 # Stock-Market-Monitor
 
-Program made with python made to monitor the price of the stock market.
-To start monitoring a stock, enter the ticker in the first box. In the second box, enter the price at which you want to be alerted. For example, if you enter the target price "TSLA" in the first box and the price "460" in the second box, the program will play a tone and open a pop-up window to notify you that that price has been reached. If the price has not yet been reached, you will be shown the ticker name, the current price (which is updated every minute), and the price the ticker must reach to send you the alert.
+Stock-Market-Monitor is a Python application designed to track stock prices in real time.
+To begin monitoring, simply enter a ticker symbol in the first field and the target price in the second.
+For example, entering “TSLA” as the ticker and “460” as the target price will cause the program to play an alert tone and display a pop-up notification once Tesla’s stock reaches $460.
+If the target price has not yet been reached, the interface will show:
+
+-The ticker symbol,
+
+-The current stock price (updated every minute)
+-The target price that will trigger the alert.
+
 
 <img width="432" height="203" alt="immagine" src="https://github.com/user-attachments/assets/a3a60e10-8384-4eaf-8f3c-4e599ff6b87f" />
 
 
-!IMPORTANT! 
-To make the program work you have to insert your twelvedata apikey. If you don't already have one you can register on the website https://twelvedata.com/ and substitute the string assigned to the ```APIKEY``` constant with your api key.
+⚠️ Important
+
+To use this program, you must provide your TwelveData API key.
+If you don’t have one, register at the twelvedata.com website and replace the value of the APIKEY constant in the script with your personal key.
