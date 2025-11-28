@@ -2,3 +2,5 @@
 customtkinter==5.2.2
 miniaudio==1.61
 twelvedata==1.2.25
+
+twelvedata apikey
