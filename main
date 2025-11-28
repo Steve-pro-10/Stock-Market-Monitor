@@ -73,6 +73,7 @@ def update_stock(symbol,price_to_reach):
 
         df = ts.as_pandas()
         last_price = df["close"].iloc[-1]
+        time.sleep(60)
         if float(last_price) > float(price_to_reach):
             
             break
