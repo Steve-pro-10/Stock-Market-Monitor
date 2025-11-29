@@ -1,8 +1,8 @@
 import customtkinter as ctk
 from twelvedata import TDClient
-import time, threading, platform, json
+import time, threading, json
 import miniaudio
-os = platform.system()
+
 
 APIKEY = "YOUR_API_KEY"
 ADVICE_AUDIO_PATH = "lello.mp3"
@@ -14,21 +14,9 @@ labels_list = {}
 root.iconbitmap("stock.ico")
 
 root.geometry("500x200")
-root.title("Stocks Monitor V1.1")
+root.title("Stocks Monitor V1.2")
 
 corner_radius=80
-
-def color_text(text, color):
-    colors = {
-        "rosso": "\033[31m",
-        "verde": "\033[32m",
-        "giallo": "\033[33m",
-        "blu": "\033[34m",
-        "magenta": "\033[35m",
-        "ciano": "\033[36m",
-        "bianco": "\033[37m",
-    }
-    return f"{colors.get(color, '')}{text}\033[0m"
 
 def prezzo_raggiunto(stock_price,symbol):
    
@@ -100,7 +88,7 @@ def update_stock():
 
             df = ts.as_pandas()
             last_price = df["close"].iloc[-1]
-            label.configure(text=f"TICKER: {symbol} | CURRENT PRICE: {str(last_price)} | 'PRICE TO REACH: ' {str(prezzo_da_raggiungere)}")
+            label.configure(text=f"TICKER: {symbol} | CURRENT PRICE: {str(last_price)} | 'PRICE TO REACH:  {str(prezzo_da_raggiungere)}")
                 
             print(f"prezzo aggiornato {symbol}  {prezzo_da_raggiungere}")
         
@@ -110,10 +98,14 @@ def update_stock():
           
 
 def remove_stock():
-    global stocks_dict, key, value
-    key,value = stocks_dict.popitem()
+    global stocks_dict,labels_list
+    last_key = next(reversed(stocks_dict))
     
-    new_stock_label.destroy()
+    del stocks_dict[last_key]
+    
+    last_key = next(reversed(labels_list))
+    last_key.destroy()
+    del labels_list[last_key]
 
     root.update()
     
@@ -159,6 +151,6 @@ open_saves()
 root.mainloop()
 
 
-save_stocks()
+save_stocks()#SALVA IL DIZIONARIO CON TICKER COME CHIAVI E IL PREZZO MAX COME VALORI!
 
-print("programma finito")
+print("program finished")
